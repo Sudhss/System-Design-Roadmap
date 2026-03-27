@@ -13,7 +13,51 @@
   --text-dim: #a1a1aa;
   --border: rgba(63, 63, 70, 0.4);
 }
+.dl-btn {
+    position: fixed;
+    top: 30px;
+    right: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 1000;
+}
 
+.dl-btn:hover {
+    background: #fff;
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(255, 255, 255, 0.15);
+}
+
+.dl-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.dl-btn:hover svg {
+    transform: translateY(2px);
+}
+
+@media (max-width: 768px) {
+    .dl-btn {
+        top: auto;
+        bottom: 20px;
+        right: 20px;
+        padding: 8px 16px;
+    }
+}
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
   background-color: var(--bg-main);
@@ -274,7 +318,10 @@ li {
 <div class="content" id="main-content">
 </div>
 </div>
-
+<a href="SYSTEM DESIGN BY SUDHANSHU SHUKLA & NIKHIL RAI.pdf" download="SYSTEM DESIGN BY SUDHANSHU SHUKLA & NIKHIL RAI.pdf" class="dl-btn">
+  <span>Download Book</span>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+</a>
 <script>
 const sections = [
 {id:'s1',num:'01',title:'Fundamentals',short:'Fundamentals',
