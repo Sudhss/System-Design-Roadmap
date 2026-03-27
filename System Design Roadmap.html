@@ -1,0 +1,1180 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+:root {
+  --bg-main: #050505;
+  --bg-sidebar: rgba(10, 10, 10, 0.6);
+  --bg-card: rgba(24, 24, 27, 0.4);
+  --accent: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.3);
+  --text-main: #ffffff;
+  --text-dim: #a1a1aa;
+  --border: rgba(63, 63, 70, 0.4);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  background-color: var(--bg-main);
+  background-image: radial-gradient(circle at 50% -20%, #2e1065 0%, transparent 40%);
+  color: var(--text-main);
+  line-height: 1.6;
+  font-size: 15px;
+  overflow-x: hidden;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  background: var(--bg-sidebar);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.nav-item {
+  padding: 12px 24px;
+  margin: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: all 0.4s ease;
+  z-index: -1;
+}
+
+.nav-item:hover {
+  color: var(--text-main);
+  transform: translateX(4px);
+}
+
+.nav-item.active {
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 20px -5px var(--accent-glow);
+}
+
+.nav-item.active::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.content {
+  flex: 1;
+  padding: 60px 10%;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.section-title {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.topic-tag {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d4d4d8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0 8px 8px 0;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.topic-tag:hover {
+  border-color: var(--accent);
+  background: rgba(139, 92, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.qa-block {
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.qa-block:hover {
+  transform: translateY(-4px);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 12px 40px -12px var(--accent-glow);
+}
+
+.q-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin: 24px 24px 8px;
+}
+
+.question {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 24px 20px;
+  color: #f4f4f5;
+}
+
+.answer-toggle {
+  width: 100%;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  border-top: 1px solid var(--border);
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  border-radius: 0 0 16px 16px;
+  transition: all 0.3s ease;
+}
+
+.answer-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.toggle-icon {
+  font-size: 18px;
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.answer-body.open + .answer-toggle .toggle-icon {
+  transform: rotate(135deg);
+}
+
+.answer-body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 24px;
+  color: #e4e4e7;
+}
+
+.answer-body.open {
+  max-height: 2000px;
+  opacity: 1;
+  padding: 0 24px 24px;
+}
+
+.highlight {
+  background: rgba(139, 92, 246, 0.05);
+  border-left: 3px solid var(--accent);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin: 20px 0;
+  font-style: italic;
+  box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.02);
+}
+
+.code-tag {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: #d8b4fe;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+ul {
+  margin-left: 20px;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+  <div style="padding:12px 16px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px">
+    <div style="font-size:14px;font-weight:500">System Design Mastery</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">Principal Engineer Answers</div>
+  </div>
+  <div class="sidebar-sections"></div>
+</div>
+<div class="content" id="main-content">
+</div>
+</div>
+
+<script>
+const sections = [
+{id:'s1',num:'01',title:'Fundamentals',short:'Fundamentals',
+topics:['Throughput vs Latency','QPS','Availability','Consistency','Fault Tolerance','Scalability','Stateless vs Stateful'],
+qa:[
+{q:'How do we estimate system traffic quickly in interviews?',a:`
+<ul>
+<li><strong>Start with daily active users (DAU)</strong> — ask the interviewer or make a reasonable assumption (e.g., 10M DAU)</li>
+<li><strong>Estimate requests per user per day</strong> — e.g., a user opens the app 5 times and does 3 actions each = 15 requests/day</li>
+<li><strong>Calculate QPS</strong>: <span class="code-tag">QPS = (DAU × requests/day) / 86,400</span></li>
+<li>Example: 10M DAU × 15 req/day = 150M req/day → ~1,750 QPS average</li>
+<li><strong>Apply peak multiplier</strong>: real traffic is not uniform — multiply average by 2–3x for peak QPS</li>
+<li><strong>Separate read vs write ratio</strong> — most apps are 80:20 or 90:10 read-heavy; design read and write paths differently</li>
+<li><strong>Round aggressively</strong> — exact numbers don't matter; order of magnitude is what counts (100 QPS vs 10K QPS vs 100K QPS leads to very different architectures)</li>
+</ul>
+<div class="highlight">Google-level tip: Always think in powers of 10. 1 QPS = trivial, 1K QPS = moderate, 100K QPS = you need serious distributed infrastructure.</div>
+`},
+{q:'What metrics define a scalable system?',a:`
+<ul>
+<li><strong>Throughput</strong>: requests/second the system can sustain under load — a scalable system should maintain throughput as load increases linearly</li>
+<li><strong>Latency at percentiles</strong>: p50, p95, p99 — watch p99 especially; tail latency kills user experience. A scalable system's p99 must not degrade as we add more instances</li>
+<li><strong>Error rate</strong>: percentage of requests that fail — should remain negligible under scale</li>
+<li><strong>Resource utilization</strong>: CPU, memory, network should not spike unexpectedly under load — the system should scale gracefully</li>
+<li><strong>Cost per request</strong>: a well-scaled system should have decreasing (or flat) cost per request as it grows due to economies of scale</li>
+<li><strong>Elasticity</strong>: how fast can the system scale up and scale down in response to traffic spikes?</li>
+<li><strong>Single point of failure (SPOF) count</strong>: ideally zero SPOFs — every component must have redundancy</li>
+</ul>
+`},
+{q:'How do we estimate storage requirements?',a:`
+<ul>
+<li><strong>Identify entities and their size</strong> — e.g., a tweet: 140 chars text = ~140 bytes, metadata = ~100 bytes, total ~300 bytes/tweet</li>
+<li><strong>Estimate writes per day</strong> — e.g., 100M tweets/day × 300 bytes = 30 GB/day</li>
+<li><strong>Account for replication</strong>: typically 3x replication = 90 GB/day storage needed</li>
+<li><strong>Add media separately</strong>: images, videos dominate — an average image is 100KB, video is 50MB; estimate separately</li>
+<li><strong>Project forward</strong>: 5-year storage = daily writes × 365 × 5. For 90 GB/day: ~164 TB over 5 years</li>
+<li><strong>Hot vs cold storage</strong>: only last 30 days of data is frequently accessed — recent data lives on fast SSD; older data moves to cold storage (like AWS Glacier) at 10x lower cost</li>
+<li><strong>Index overhead</strong>: add 20–30% overhead for database indexes</li>
+</ul>
+<div class="highlight">Key formula: Storage = entities/day × size_per_entity × replication_factor × retention_period</div>
+`},
+{q:'How do you decide which component becomes the bottleneck first?',a:`
+<ul>
+<li><strong>Draw the request path end-to-end</strong>: client → DNS → load balancer → app server → cache → database → response</li>
+<li><strong>Identify stateful components</strong>: databases and caches are almost always the first bottleneck — they have I/O constraints that compute doesn't</li>
+<li><strong>Measure or estimate throughput at each layer</strong>:
+  <ul class="nested">
+    <li>A single app server: ~1,000–5,000 QPS (depending on complexity)</li>
+    <li>A single database: ~5,000 reads/sec, ~1,000 writes/sec for PostgreSQL</li>
+    <li>A cache (Redis): ~100,000 ops/sec</li>
+  </ul>
+</li>
+<li><strong>The slowest layer defines system throughput</strong> — find the component whose capacity is lowest relative to demand</li>
+<li><strong>Check for synchronous dependencies</strong>: any synchronous external call (third-party API, slow DB query) blocks the thread and reduces effective throughput dramatically</li>
+<li><strong>Watch for hot spots</strong>: even if overall throughput is fine, a single DB shard or a single cache key being hammered becomes the bottleneck</li>
+</ul>
+`},
+{q:'How do you identify single points of failure?',a:`
+<ul>
+<li><strong>Walk the dependency graph</strong>: for every component in your architecture, ask — if this fails, does the entire system fail?</li>
+<li><strong>Common SPOFs to check</strong>:
+  <ul class="nested">
+    <li>A single load balancer with no failover</li>
+    <li>A single database with no replica</li>
+    <li>A single DNS provider</li>
+    <li>A single data center / availability zone</li>
+    <li>A shared authentication service with no replica</li>
+  </ul>
+</li>
+<li><strong>For each SPOF, ask</strong>: what is the cost of eliminating it? Can we add a replica? Use active-active or active-passive failover?</li>
+<li><strong>Blast radius analysis</strong>: when component X fails, how many users are affected? Isolate failures to reduce blast radius — don't let one service failure cascade everywhere</li>
+<li><strong>Chaos engineering</strong> (Netflix-style): in production systems, randomly kill instances to verify no hidden SPOFs exist in your actual infrastructure</li>
+</ul>
+`}
+]},
+
+{id:'s2',num:'02',title:'Scaling',short:'Scaling',
+topics:['Vertical Scaling','Horizontal Scaling','Auto Scaling','Stateless Architecture','Microservices vs Monolith'],
+qa:[
+{q:'Why do stateless services scale better?',a:`
+<ul>
+<li><strong>No session affinity needed</strong>: any instance can handle any request — load balancer can freely distribute traffic using round-robin or least-connections</li>
+<li><strong>Horizontal scaling is trivial</strong>: add or remove instances without coordination overhead; no state migration required</li>
+<li><strong>Failure isolation</strong>: if an instance dies, no user session is lost — the next request goes to a healthy instance seamlessly</li>
+<li><strong>Rolling deployments are safe</strong>: you can take down 20% of instances, update them, bring them back — users don't notice because sessions aren't tied to instances</li>
+<li><strong>Where does state live?</strong>: externalized to Redis, a database, or a JWT token — state is the client's responsibility or lives in a shared, replicated store</li>
+<li><strong>Contrast with stateful</strong>: a stateful app server holding sessions in memory requires sticky sessions — if that server dies, all its sessions die; you can't freely scale out</li>
+</ul>
+<div class="highlight">Rule of thumb: State belongs in dedicated data stores (Redis, databases), not in application memory.</div>
+`},
+{q:'What are the limitations of vertical scaling?',a:`
+<ul>
+<li><strong>Hard hardware ceiling</strong>: there's a physical limit to how powerful a single machine can be — you can't add infinite CPUs or RAM to one server</li>
+<li><strong>Exponential cost curve</strong>: doubling CPU/RAM often costs 4–8x more due to enterprise hardware pricing; value per dollar decreases rapidly</li>
+<li><strong>Still a SPOF</strong>: a more powerful single machine is still a single machine — one hardware failure brings everything down</li>
+<li><strong>Downtime during upgrades</strong>: vertical scaling usually requires stopping the instance, upgrading hardware, restarting — causes planned downtime</li>
+<li><strong>Cannot scale beyond a region</strong>: a single machine cannot be geographically distributed — global latency optimization requires horizontal, multi-region deployment</li>
+<li><strong>Useful for</strong>: quick fixes to buy time, databases that are hard to shard (scale-up the primary before sharding), and workloads that truly require high single-thread performance</li>
+</ul>
+`},
+{q:'What problems appear when horizontal scaling increases?',a:`
+<ul>
+<li><strong>Distributed state management</strong>: sessions, caches, and locks that worked on one machine need to be externalized and shared — adds latency and complexity</li>
+<li><strong>Data consistency</strong>: multiple instances writing to a shared database creates race conditions; distributed transactions are expensive</li>
+<li><strong>Network overhead</strong>: inter-service calls replace in-process calls; serialization/deserialization, DNS lookups, TCP handshakes add latency</li>
+<li><strong>Service discovery</strong>: instances come and go dynamically — you need a registry (Consul, Kubernetes) to know which instances are available</li>
+<li><strong>Distributed debugging</strong>: a bug spanning 5 services is exponentially harder to trace than a bug in one monolith — requires distributed tracing (Jaeger, Zipkin)</li>
+<li><strong>Thundering herd</strong>: when you scale up suddenly after a spike, new instances might all try to warm their caches simultaneously, hammering the database</li>
+<li><strong>Operational complexity</strong>: 100 services instead of 1 means 100x more deployment pipelines, monitoring dashboards, alerting rules, and on-call scenarios</li>
+</ul>
+`},
+{q:'When does a monolith become impossible to scale?',a:`
+<ul>
+<li><strong>When different components need different scaling profiles</strong>: if your video encoding needs 100 CPUs but your user-auth needs 2, a monolith wastes resources scaling them together</li>
+<li><strong>When a single team cannot own the whole codebase</strong>: too many engineers in one repo causes merge conflicts, slow CI, and unclear ownership</li>
+<li><strong>When deployment frequency is blocked</strong>: one team's incomplete feature blocks all other teams from deploying — monolith forces synchronized releases</li>
+<li><strong>When technology choices are constrained</strong>: entire system must use one language and framework; can't use Go for high-throughput services and Python for ML</li>
+<li><strong>When a database becomes the bottleneck</strong>: a single monolith database that serves all use cases (OLTP, analytics, search) will inevitably hit limits — microservices allow database-per-service pattern</li>
+</ul>
+<div class="highlight">Google-level nuance: Start with a well-structured monolith. Extract to microservices only when you have a clear scaling pain point — premature decomposition creates distributed-system complexity without the benefits.</div>
+`}
+]},
+
+{id:'s3',num:'03',title:'Load Balancing',short:'Load Balancing',
+topics:['L4 vs L7','Round Robin','Least Connections','Consistent Hashing','Sticky Sessions','Health Checks'],
+qa:[
+{q:'How does a load balancer detect a dead server?',a:`
+<ul>
+<li><strong>Active health checks</strong>: the load balancer periodically sends probe requests (every 5–30 seconds) to each backend — typically an HTTP GET to <span class="code-tag">/health</span> or <span class="code-tag">/ping</span></li>
+<li><strong>Success criteria</strong>: the backend must respond with 2xx within a timeout window (e.g., 2 seconds). Failure for N consecutive checks (e.g., 3) marks the server as unhealthy</li>
+<li><strong>Passive health checks</strong>: the LB monitors live traffic — if a server returns 5xx errors or connection timeouts above a threshold, it's removed from rotation without needing explicit probes</li>
+<li><strong>Recovery</strong>: a server must pass M consecutive health checks (e.g., 2) before being added back to the pool — prevents flapping</li>
+<li><strong>Difference from heartbeats</strong>: heartbeats are server-initiated ("I'm alive"); health checks are LB-initiated ("are you alive?") — both can be used together</li>
+<li><strong>Graceful drain</strong>: before removing a server (planned shutdown), the LB stops sending new connections but lets in-flight requests complete (connection draining)</li>
+</ul>
+`},
+{q:'Why is consistent hashing important in distributed systems?',a:`
+<ul>
+<li><strong>The problem it solves</strong>: with naive modular hashing (<span class="code-tag">server = hash(key) % N</span>), adding or removing one server causes <em>most</em> keys to remap to different servers — massive cache invalidation, thundering herd on the database</li>
+<li><strong>Consistent hashing limits remapping</strong>: adding one node causes only <span class="code-tag">K/N</span> keys to remap (K = total keys, N = total nodes) instead of most keys</li>
+<li><strong>How it works</strong>: servers and keys are placed on a conceptual ring (0–2³²). A key is served by the nearest server clockwise on the ring</li>
+<li><strong>Virtual nodes</strong>: each physical server owns multiple positions on the ring to ensure even distribution and reduce hotspots from unequal spacing</li>
+<li><strong>Used in</strong>: Cassandra (token ring), DynamoDB, Memcached, CDN edge server selection, distributed caches</li>
+</ul>
+
+<div class="diagram-wrap">
+<div class="diagram-label">Consistent hash ring — node join/leave impact</div>
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<circle cx="220" cy="130" r="90" fill="none" stroke="var(--color-border-secondary)" stroke-width="1"/>
+<g class="c-purple"><circle cx="220" cy="40" r="22" stroke-width="0.5"/><text class="th" x="220" y="40" text-anchor="middle" dominant-baseline="central">A</text></g>
+<g class="c-teal"><circle cx="300" cy="185" r="22" stroke-width="0.5"/><text class="th" x="300" y="185" text-anchor="middle" dominant-baseline="central">B</text></g>
+<g class="c-coral"><circle cx="140" cy="185" r="22" stroke-width="0.5"/><text class="th" x="140" y="185" text-anchor="middle" dominant-baseline="central">C</text></g>
+<circle cx="265" cy="65" r="5" fill="#EF9F27"/><text class="ts" x="280" y="60" dominant-baseline="central" fill="var(--color-text-secondary)">k1→A</text>
+<circle cx="310" cy="135" r="5" fill="#EF9F27"/><text class="ts" x="320" y="130" dominant-baseline="central" fill="var(--color-text-secondary)">k2→B</text>
+<circle cx="165" cy="75" r="5" fill="#EF9F27"/><text class="ts" x="105" y="70" dominant-baseline="central" fill="var(--color-text-secondary)">k3→A</text>
+<text class="ts" x="220" y="130" text-anchor="middle" dominant-baseline="central" fill="var(--color-text-secondary)">Ring</text>
+
+<g class="c-gray"><rect x="390" y="30" width="240" height="54" rx="8" stroke-width="0.5"/><text class="th" x="510" y="50" text-anchor="middle" dominant-baseline="central">Node joins ring</text><text class="ts" x="510" y="68" text-anchor="middle" dominant-baseline="central">Only ~K/N keys remap</text></g>
+<g class="c-gray"><rect x="390" y="100" width="240" height="54" rx="8" stroke-width="0.5"/><text class="th" x="510" y="120" text-anchor="middle" dominant-baseline="central">Node leaves ring</text><text class="ts" x="510" y="138" text-anchor="middle" dominant-baseline="central">Keys go to next node only</text></g>
+<g class="c-gray"><rect x="390" y="170" width="240" height="54" rx="8" stroke-width="0.5"/><text class="th" x="510" y="190" text-anchor="middle" dominant-baseline="central">Virtual nodes</text><text class="ts" x="510" y="208" text-anchor="middle" dominant-baseline="central">Even distribution on ring</text></g>
+<line x1="630" y1="57" x2="650" y2="80" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<line x1="630" y1="127" x2="650" y2="130" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<line x1="630" y1="197" x2="650" y2="197" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+</svg>
+</div>
+`},
+{q:'What happens when a node joins or leaves the hash ring?',a:`
+<ul>
+<li><strong>Node joins</strong>: the new node takes responsibility for keys between itself and its predecessor on the ring. Only those keys (from the predecessor's range) need to be migrated to the new node — all other nodes are unaffected</li>
+<li><strong>Node leaves/fails</strong>: the keys that were owned by the failed node shift to the next node clockwise on the ring. Only ~1/N of total keys are affected</li>
+<li><strong>Data migration</strong>: in cache scenarios, no data migration is needed — those keys simply miss cache and are repopulated from the database on next request</li>
+<li><strong>In databases (Cassandra)</strong>: the system uses replication — data already exists on neighboring nodes, so a node leaving just means one of the replicas becomes primary</li>
+<li><strong>Rebalancing</strong>: after a join, the system streams key-value pairs from the old owner to the new node — called "token migration" in Cassandra</li>
+</ul>
+`},
+{q:'Why are sticky sessions usually avoided?',a:`
+<ul>
+<li><strong>Undermines horizontal scaling</strong>: requests are pinned to specific servers — a server with many active sessions receives disproportionate load, making load balancing ineffective</li>
+<li><strong>SPOF per user</strong>: if the server holding your session crashes, your session is gone — user is effectively logged out or loses context</li>
+<li><strong>Deployment problems</strong>: you can't drain and restart a server gracefully if 1,000 users have active sessions on it</li>
+<li><strong>Auto-scaling complexity</strong>: when scaling down, you must wait for all sessions to expire naturally before terminating an instance — wastes resources</li>
+<li><strong>Better alternative</strong>: externalize session state to Redis. Any server can serve any request. Redis is fast enough (sub-millisecond) that the overhead is negligible</li>
+<li><strong>When sticky sessions are acceptable</strong>: WebSocket connections (inherently stateful, must stay connected to one server), or short-lived stateful computations where externalizing state is too expensive</li>
+</ul>
+`}
+]},
+
+{id:'s4',num:'04',title:'Caching',short:'Caching',
+topics:['Cache-aside','Write-through','Write-back','Write-around','TTL','LRU/LFU','Redis','Memcached','CDN'],
+qa:[
+{q:'Why is cache invalidation difficult?',a:`
+<ul>
+<li><strong>The fundamental problem</strong>: "There are only two hard things in CS: cache invalidation and naming things." — Phil Karlton. The difficulty is correctness under concurrency and distribution.</li>
+<li><strong>Race condition on write</strong>: thread A writes to DB and is about to update cache; thread B reads stale cache before A updates it; thread B's result is now outdated</li>
+<li><strong>Distributed caches</strong>: in a cluster of cache nodes, invalidating a key on one node doesn't immediately propagate to others — a brief window of inconsistency exists</li>
+<li><strong>TTL trade-off</strong>: short TTL = more cache misses and DB load; long TTL = stale data shown to users; choosing the right TTL requires deep understanding of data change frequency</li>
+<li><strong>Cascade invalidation</strong>: invalidating a user record may require invalidating 50 derived views that depend on it — hard to track all dependencies</li>
+<li><strong>Event-driven invalidation</strong> (better approach): when DB is updated, publish an event; cache invalidation happens asynchronously via event subscriber. Still has a brief staleness window.</li>
+<li><strong>Google solution</strong>: use cache versioning — instead of invalidating, write a new version key; reads always go to the latest version; old versions expire via TTL</li>
+</ul>
+`},
+{q:'What causes cache stampede and how do large systems avoid it?',a:`
+<ul>
+<li><strong>What it is</strong>: a popular cache key expires. Multiple requests arrive simultaneously, all see a miss, all query the database concurrently — the database gets a sudden spike and potentially falls over</li>
+<li><strong>Why it's dangerous</strong>: if this hot key was handling 10,000 RPS, 10 seconds of misses while it repopulates means 100,000 uncached requests hit the database</li>
+</ul>
+<ul>
+<li><strong>Solution 1 — Mutex/Lock</strong>: first thread to see a miss acquires a distributed lock (Redis SETNX), queries DB, populates cache, releases lock. Other threads wait or serve stale data. Risk: lock contention.</li>
+<li><strong>Solution 2 — Probabilistic Early Recomputation</strong>: before the TTL expires, probabilistically decide to refresh early. Higher probability as expiry approaches. Avoids the cliff-edge expiry problem.</li>
+<li><strong>Solution 3 — Background refresh</strong>: serve the stale cache value immediately while a background process asynchronously refreshes the cache. User sees stale data for a brief window but DB is not hammered.</li>
+<li><strong>Solution 4 — Jitter on TTL</strong>: instead of a fixed TTL of exactly 1 hour, add random jitter: <span class="code-tag">TTL = 3600 + random(0, 600)</span>. This spreads expirations across time so not all keys expire simultaneously.</li>
+</ul>
+`},
+{q:'When should we NOT use caching?',a:`
+<ul>
+<li><strong>Highly dynamic data</strong>: if data changes every second (stock prices, live scores), caching adds latency and shows stale values — just query the source directly</li>
+<li><strong>Strong consistency requirements</strong>: financial transactions, inventory counts, or anything where showing stale data causes real-world harm (user sees "item in stock" but it sold out 1 second ago)</li>
+<li><strong>Unique, low-frequency queries</strong>: if every query has a unique predicate (e.g., full-text search with custom filters), cache hit rate will be near zero — caching adds overhead with no benefit</li>
+<li><strong>Write-heavy workloads</strong>: if writes >> reads, you spend most time invalidating/updating cache with few reads benefiting — cache provides little value and adds complexity</li>
+<li><strong>Cache size constraints</strong>: if the working set is larger than available cache memory, frequent evictions mean poor hit rates — the cache churn negates benefits</li>
+<li><strong>Simple, already-fast queries</strong>: an indexed lookup returning one row in 1ms doesn't need caching — the cache lookup itself adds latency for negligible benefit</li>
+</ul>
+`}
+]},
+
+{id:'s5',num:'05',title:'Databases',short:'Databases',
+topics:['SQL vs NoSQL','ACID','CAP Theorem','Sharding','Replication','Read Replicas','Indexing','Eventual Consistency'],
+qa:[
+{q:'When should we choose SQL vs NoSQL?',a:`
+<ul>
+<li><strong>Choose SQL (PostgreSQL, MySQL) when</strong>:
+  <ul class="nested">
+    <li>Data has a well-defined, stable schema</li>
+    <li>You need ACID transactions (banking, order management)</li>
+    <li>You need complex joins across multiple entities</li>
+    <li>Reporting and analytics with ad-hoc queries</li>
+    <li>Team is familiar with relational model</li>
+  </ul>
+</li>
+<li><strong>Choose NoSQL when</strong>:
+  <ul class="nested">
+    <li>Schema is highly variable or evolves frequently (document stores like MongoDB)</li>
+    <li>Massive scale write throughput required (Cassandra: millions of writes/sec)</li>
+    <li>Key-value access patterns with simple lookups (DynamoDB, Redis)</li>
+    <li>Graph relationships (social networks: Neo4j)</li>
+    <li>Time-series data (InfluxDB, TimescaleDB)</li>
+  </ul>
+</li>
+<li><strong>Google-level nuance</strong>: most large systems use both. PostgreSQL for user accounts and orders; Cassandra for activity feeds; Redis for caching; Elasticsearch for search. The question is always which DB is right for which use case.</li>
+</ul>
+`},
+{q:'What problems appear when sharding data?',a:`
+<ul>
+<li><strong>Cross-shard queries</strong>: a query joining users from shard 1 with orders from shard 7 requires scatter-gather — query all shards, merge results in application layer. Slow and complex.</li>
+<li><strong>Rebalancing</strong>: as data grows unevenly, some shards become overloaded. Moving data between shards while serving live traffic is extremely dangerous and requires careful orchestration</li>
+<li><strong>Referential integrity</strong>: foreign keys across shard boundaries cannot be enforced at DB level — must be enforced in application code</li>
+<li><strong>Transactions across shards</strong>: two-phase commit (2PC) is needed for distributed transactions — slow, complex, and a potential deadlock source. Most systems avoid cross-shard transactions by design.</li>
+<li><strong>Choosing the wrong shard key</strong>: if you shard by <span class="code-tag">user_id</span> but your most common query is <span class="code-tag">WHERE email = ?</span>, every query hits every shard (full scatter). Shard key must align with access patterns.</li>
+</ul>
+`},
+{q:'What causes hot shards?',a:`
+<ul>
+<li><strong>Non-uniform access distribution</strong>: if you shard by <span class="code-tag">user_id</span> but some users are celebrities (Twitter's @BarackObama), that shard gets disproportionate read traffic</li>
+<li><strong>Time-based access patterns</strong>: if you shard by <span class="code-tag">created_at</span>, recent data is always in the "current" shard while historical shards are cold — temporal hot spotting</li>
+<li><strong>Popular entities</strong>: a viral video, a trending hashtag, or a hot product — all queries funnel to one shard</li>
+<li><strong>Solutions</strong>:
+  <ul class="nested">
+    <li>Add a random suffix to the shard key for hot entities: <span class="code-tag">user_id_0, user_id_1, ..., user_id_N</span></li>
+    <li>Use consistent hashing with virtual nodes so one physical node owns many virtual nodes, distributing load</li>
+    <li>Cache hot entities in Redis to absorb read traffic before it hits the DB shard</li>
+    <li>Create dedicated "celebrity" or "hot item" shards with higher resources</li>
+  </ul>
+</li>
+</ul>
+`},
+{q:'What trade-offs does CAP theorem force?',a:`
+<ul>
+<li><strong>CAP states</strong>: a distributed system can guarantee at most 2 of: Consistency, Availability, Partition tolerance</li>
+<li><strong>Partition tolerance is non-negotiable</strong>: network partitions happen in any distributed system — you can't choose to opt out. So the real choice is: during a partition, do you sacrifice Consistency or Availability?</li>
+<li><strong>CP systems</strong> (Consistency + Partition tolerance): when a partition occurs, the system refuses to serve requests rather than return stale data. Example: ZooKeeper, HBase. Used for financial systems where stale reads cause real damage.</li>
+<li><strong>AP systems</strong> (Availability + Partition tolerance): when a partition occurs, nodes continue serving requests but may return stale data. Example: Cassandra, DynamoDB, CouchDB. Used for shopping carts, user timelines where stale data is acceptable.</li>
+<li><strong>CA systems</strong>: only exist as a theoretical construct in non-distributed (single-node) systems. PostgreSQL is CA but only because it's not distributed.</li>
+<li><strong>PACELC extension</strong>: even when no partition exists, there's a latency/consistency trade-off. Replication adds latency — synchronous replication = consistency, asynchronous = latency win.</li>
+</ul>
+<div class="highlight">Google-level answer: CAP is a simplification. Real systems operate on a spectrum — e.g., Spanner achieves "external consistency" using TrueTime (GPS + atomic clocks) to bound clock skew, giving strong consistency with global availability.</div>
+`}
+]},
+
+{id:'s6',num:'06',title:'Networking',short:'Networking',
+topics:['DNS','TCP vs UDP','HTTP/HTTPS','TLS Handshake','CDN','Reverse Proxy','API Gateway'],
+qa:[
+{q:'Walk through: what happens when you type google.com in the browser?',a:`
+<div class="diagram-wrap">
+<div class="diagram-label">Full request flow — google.com</div>
+<svg width="100%" viewBox="0 0 680 380">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<g class="c-purple"><rect x="20" y="20" width="100" height="44" rx="8" stroke-width="0.5"/><text class="th" x="70" y="42" text-anchor="middle" dominant-baseline="central">Browser</text></g>
+<line x1="120" y1="42" x2="148" y2="42" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<g class="c-blue"><rect x="150" y="20" width="100" height="44" rx="8" stroke-width="0.5"/><text class="th" x="200" y="35" text-anchor="middle" dominant-baseline="central">DNS</text><text class="ts" x="200" y="53" text-anchor="middle" dominant-baseline="central">Lookup</text></g>
+<line x1="250" y1="42" x2="278" y2="42" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<g class="c-teal"><rect x="280" y="20" width="100" height="44" rx="8" stroke-width="0.5"/><text class="th" x="330" y="35" text-anchor="middle" dominant-baseline="central">TCP</text><text class="ts" x="330" y="53" text-anchor="middle" dominant-baseline="central">Handshake</text></g>
+<line x1="380" y1="42" x2="408" y2="42" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<g class="c-amber"><rect x="410" y="20" width="100" height="44" rx="8" stroke-width="0.5"/><text class="th" x="460" y="35" text-anchor="middle" dominant-baseline="central">TLS</text><text class="ts" x="460" y="53" text-anchor="middle" dominant-baseline="central">Handshake</text></g>
+<line x1="510" y1="42" x2="538" y2="42" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<g class="c-coral"><rect x="540" y="20" width="100" height="44" rx="8" stroke-width="0.5"/><text class="th" x="590" y="35" text-anchor="middle" dominant-baseline="central">HTTP</text><text class="ts" x="590" y="53" text-anchor="middle" dominant-baseline="central">Request</text></g>
+
+<line x1="590" y1="64" x2="590" y2="112" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<g class="c-green"><rect x="540" y="114" width="100" height="44" rx="8" stroke-width="0.5"/><text class="th" x="590" y="129" text-anchor="middle" dominant-baseline="central">CDN Edge</text><text class="ts" x="590" y="147" text-anchor="middle" dominant-baseline="central">Cache hit?</text></g>
+<line x1="540" y1="136" x2="408" y2="136" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<text class="ts" x="475" y="126" text-anchor="middle" fill="var(--color-text-secondary)">miss</text>
+<g class="c-gray"><rect x="280" y="114" width="126" height="44" rx="8" stroke-width="0.5"/><text class="th" x="343" y="129" text-anchor="middle" dominant-baseline="central">Load Balancer</text><text class="ts" x="343" y="147" text-anchor="middle" dominant-baseline="central">L7 routing</text></g>
+<line x1="280" y1="136" x2="158" y2="136" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<g class="c-purple"><rect x="30" y="114" width="126" height="44" rx="8" stroke-width="0.5"/><text class="th" x="93" y="129" text-anchor="middle" dominant-baseline="central">App Servers</text><text class="ts" x="93" y="147" text-anchor="middle" dominant-baseline="central">Business logic</text></g>
+<line x1="93" y1="158" x2="93" y2="206" class="arr" fill="none" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+<g class="c-teal"><rect x="30" y="208" width="126" height="44" rx="8" stroke-width="0.5"/><text class="th" x="93" y="223" text-anchor="middle" dominant-baseline="central">Database</text><text class="ts" x="93" y="241" text-anchor="middle" dominant-baseline="central">PostgreSQL/Spanner</text></g>
+
+<text class="ts" x="340" y="300" text-anchor="middle" fill="var(--color-text-secondary)">Step-by-step detail below</text>
+</svg>
+</div>
+<ul>
+<li><strong>Step 1 — DNS lookup</strong>: Browser checks its DNS cache → if miss, asks OS → OS checks <span class="code-tag">/etc/hosts</span> → asks configured DNS resolver (ISP or 8.8.8.8) → resolver queries root nameserver → TLD nameserver (.com) → Google's authoritative nameserver → returns IP address. This entire chain can take 10–200ms on a cold lookup but is usually cached.</li>
+<li><strong>Step 2 — TCP handshake (3-way)</strong>: Browser opens a TCP connection to the resolved IP on port 443. SYN → SYN-ACK → ACK. One round-trip time (RTT) of latency. Connection is now established.</li>
+<li><strong>Step 3 — TLS handshake</strong>: Client hello (supported cipher suites, TLS version, random nonce) → Server hello (chosen cipher, certificate) → Client verifies certificate against trusted CA → Key exchange (ECDHE) → Both derive session keys → "Finished" messages exchanged. TLS 1.3 completes in 1 RTT (vs 2 RTT for TLS 1.2).</li>
+<li><strong>Step 4 — HTTP request</strong>: Browser sends <span class="code-tag">GET / HTTP/2 Host: www.google.com</span> with headers (cookies, Accept, etc.) over the encrypted TLS channel.</li>
+<li><strong>Step 5 — CDN edge server</strong>: Google's anycast routing sends the request to the nearest CDN edge PoP (Point of Presence). If static assets (CSS, JS) are cached at the edge, they're returned without hitting origin — saving hundreds of ms for global users.</li>
+<li><strong>Step 6 — Load balancer</strong>: For dynamic requests (search queries), the CDN forwards to Google's load balancer which applies L7 routing (by path, headers, cookies) to send to the appropriate backend fleet.</li>
+<li><strong>Step 7 — Backend service</strong>: The request hits a Google frontend server (GFE), is authenticated, hits the search index, retrieves results, and the response flows back through the chain: backend → LB → CDN → client.</li>
+</ul>
+`},
+{q:'Why do CDNs reduce latency?',a:`
+<ul>
+<li><strong>Proximity</strong>: CDN PoPs are distributed globally (Cloudflare has 300+ PoPs). A user in Mumbai hits a Mumbai PoP instead of a US-East origin server — reducing RTT from ~200ms to ~5ms</li>
+<li><strong>Cache static content at the edge</strong>: images, JS, CSS, and fonts are cached at the PoP. Subsequent users in the same region get content from the PoP with no trip to origin</li>
+<li><strong>TCP connection reuse</strong>: CDNs maintain persistent connections to the origin. Clients connect to the nearby edge; the edge reuses a warm, pre-established connection to origin — avoiding repeated TCP+TLS handshakes</li>
+<li><strong>Anycast routing</strong>: a single IP address routes to the nearest PoP based on BGP routing — no DNS round-robin latency</li>
+<li><strong>HTTP/2 and HTTP/3</strong>: CDNs implement the latest protocols between client and edge, even if the origin only speaks HTTP/1.1</li>
+</ul>
+`},
+{q:'Why is TCP used for HTTP?',a:`
+<ul>
+<li><strong>Reliability</strong>: HTTP requires every byte to arrive in order and without corruption. TCP provides sequencing, acknowledgment, and retransmission — UDP does not</li>
+<li><strong>Web content is stateful</strong>: a web page must arrive complete and in order — missing a CSS file or a JS packet renders the page broken</li>
+<li><strong>Flow control</strong>: TCP's congestion control (CUBIC, BBR) ensures senders don't overwhelm receivers or network links</li>
+<li><strong>Exception — HTTP/3</strong>: HTTP/3 uses QUIC (UDP-based) which implements its own reliability, congestion control, and multiplexing without TCP's head-of-line blocking. This is the modern evolution — but it's still reliable delivery, just implemented in user-space over UDP</li>
+</ul>
+`}
+]},
+
+{id:'s7',num:'07',title:'Protocols',short:'Protocols',
+topics:['REST','HTTP','WebSockets','gRPC'],
+qa:[
+{q:'When should we use WebSockets instead of HTTP?',a:`
+<ul>
+<li><strong>Real-time, bidirectional communication</strong>: when the server needs to push data to clients without the client requesting it first — e.g., live notifications, chat messages, collaborative editing</li>
+<li><strong>Low latency, frequent updates</strong>: live stock prices, gaming state updates, live sports scores — polling HTTP every second is wasteful; WebSocket pushes updates the moment they happen</li>
+<li><strong>Persistent connection required</strong>: multiplayer games where server and client continuously exchange state — a persistent WebSocket connection avoids TCP handshake overhead per message</li>
+<li><strong>Do NOT use WebSockets when</strong>:
+  <ul class="nested">
+    <li>Communication is one-directional (client → server only): HTTP POST works fine</li>
+    <li>Updates are infrequent (every few minutes): Server-Sent Events (SSE) are lighter weight</li>
+    <li>You need request-response semantics with caching: HTTP is purpose-built for this</li>
+  </ul>
+</li>
+<li><strong>Infrastructure consideration</strong>: WebSockets require persistent connections — your load balancer must support L7 WebSocket proxying; connection count limits become a resource concern at scale</li>
+</ul>
+`},
+{q:'Why is gRPC faster than REST?',a:`
+<ul>
+<li><strong>Binary serialization (Protocol Buffers)</strong>: REST typically uses JSON (text-based, verbose). gRPC uses protobuf which is compact binary — typically 3–10x smaller payload, faster to serialize/deserialize</li>
+<li><strong>HTTP/2 multiplexing</strong>: gRPC runs over HTTP/2 which allows multiple requests on one connection (multiplexed streams) without head-of-line blocking. REST over HTTP/1.1 requires multiple TCP connections.</li>
+<li><strong>Streaming support</strong>: gRPC natively supports client streaming, server streaming, and bidirectional streaming — REST requires WebSockets or SSE for streaming</li>
+<li><strong>Connection reuse</strong>: persistent HTTP/2 connections mean no TCP+TLS handshake per request — significant latency savings in microservice-to-microservice calls</li>
+<li><strong>Generated type-safe clients</strong>: protobuf generates strongly-typed client libraries — reduces serialization bugs and eliminates manual HTTP client code</li>
+<li><strong>When gRPC is NOT better</strong>: browser clients (limited gRPC-Web support), public APIs (REST is universally understood), simple CRUD where JSON tooling is more productive</li>
+</ul>
+`},
+{q:'Why is HTTP stateless?',a:`
+<ul>
+<li><strong>Design philosophy</strong>: HTTP was designed for the web where servers can't maintain open connections to millions of browsers. Each request is self-contained — the server needs no memory of previous requests</li>
+<li><strong>Scalability benefit</strong>: statelessness means any server in a pool can handle any request — enables horizontal scaling without session affinity</li>
+<li><strong>Simplicity</strong>: the server doesn't need to allocate memory per client or manage connection timeouts — reduces server complexity enormously</li>
+<li><strong>How state is achieved</strong>: cookies, JWT tokens, and session IDs in headers allow applications to layer state on top of stateless HTTP. The server looks up state from an external store (Redis) using the session ID.</li>
+<li><strong>HTTP vs WebSocket</strong>: HTTP is stateless by design; WebSocket is stateful — the connection persists and the server tracks per-connection state. This is why WebSocket adds complexity to scaling.</li>
+</ul>
+`}
+]},
+
+{id:'s8',num:'08',title:'Reliability',short:'Reliability',
+topics:['Rate Limiting','Token Bucket','Retries','Exponential Backoff','Circuit Breaker','Health Checks','Heartbeats'],
+qa:[
+{q:'Why do retries cause cascading failures?',a:`
+<ul>
+<li><strong>The scenario</strong>: Service A calls Service B. B is slow (95th percentile = 5s instead of 50ms) due to partial overload. A's timeout fires, so A retries. Now A is sending 2x the requests to an already-overloaded B.</li>
+<li><strong>Retry amplification</strong>: if you have 100 clients all retrying 3 times, an overloaded service that was receiving 100 RPS suddenly sees 300 RPS — the exact opposite of what helps recovery</li>
+<li><strong>Cascading upstream</strong>: A is blocked waiting for B; A's callers time out; A's callers retry — the thundering herd propagates upstream through the entire call chain</li>
+<li><strong>Queue buildup</strong>: if B has a request queue, retries fill the queue faster than they drain — queue depth grows unbounded, latency explodes, eventually OOM</li>
+<li><strong>Solutions</strong>:
+  <ul class="nested">
+    <li>Exponential backoff with jitter: don't retry immediately; wait 2^n seconds + random jitter</li>
+    <li>Retry budget: limit total retries to 10% of requests to prevent amplification</li>
+    <li>Circuit breaker: stop retrying entirely when failure rate crosses a threshold</li>
+    <li>Idempotency: ensure retried requests don't cause duplicate side effects (payments!)</li>
+  </ul>
+</li>
+</ul>
+`},
+{q:'What problem does the circuit breaker solve?',a:`
+<ul>
+<li><strong>The problem</strong>: without a circuit breaker, clients hammer a failing downstream service with requests. Every request ties up a thread waiting for a timeout — thread pool exhaustion brings down the calling service too</li>
+<li><strong>The pattern</strong>: the circuit breaker tracks failure rate. States:
+  <ul class="nested">
+    <li><strong>Closed</strong> (normal): requests flow through. Failure counter increments on errors.</li>
+    <li><strong>Open</strong> (failing): after N failures in a window, the circuit "opens" — requests fail immediately (fast fail) without touching the downstream service. Caller gets an error immediately instead of waiting for timeout.</li>
+    <li><strong>Half-open</strong> (probing): after a cooldown period, a few test requests are let through. If they succeed, circuit closes. If they fail, circuit opens again.</li>
+  </ul>
+</li>
+<li><strong>Benefits</strong>:
+  <ul class="nested">
+    <li>Fast failure instead of slow timeout — releases threads immediately</li>
+    <li>Gives the failing service time to recover without being hammered</li>
+    <li>Allows graceful degradation: return cached/default response when circuit is open</li>
+  </ul>
+</li>
+<li><strong>Implementation</strong>: Netflix Hystrix (legacy), Resilience4j (modern), built-in in Istio service mesh</li>
+</ul>
+`},
+{q:'How does rate limiting prevent API abuse?',a:`
+<ul>
+<li><strong>Protects infrastructure</strong>: without rate limiting, a single rogue client (or DDoS) can consume all server resources — rate limiting enforces fairness and resource quotas</li>
+<li><strong>Token bucket algorithm</strong>: each client has a bucket with capacity N tokens. Tokens refill at rate R per second. Each request consumes 1 token. If bucket is empty → request is rejected (429 Too Many Requests).</li>
+<li><strong>Sliding window</strong>: track request count in the last 60 seconds using a Redis sorted set — more accurate than fixed windows (no burst at window boundaries)</li>
+<li><strong>Where to implement</strong>:
+  <ul class="nested">
+    <li>API Gateway (best): centralized, applies before any backend load</li>
+    <li>Nginx/Load Balancer: limits connections at L4/L7</li>
+    <li>Application layer: for user-specific or business-logic rate limits (e.g., 5 password reset attempts/hour)</li>
+  </ul>
+</li>
+<li><strong>Distributed rate limiting</strong>: in a multi-instance setup, each instance can't maintain its own counter — use Redis as shared counter with atomic INCR + TTL. Lua scripts ensure atomicity.</li>
+<li><strong>Graduated responses</strong>: instead of hard reject, slow down (add delay) slightly below the limit; hard reject at the limit; ban temporarily after sustained abuse</li>
+</ul>
+`}
+]},
+
+{id:'s9',num:'09',title:'Distributed Systems',short:'Distributed Systems',
+topics:['Data Partitioning','Hash Partitioning','Range Partitioning','Replication','Failover','Idempotency'],
+qa:[
+{q:'What happens when a node fails in a distributed system?',a:`
+<ul>
+<li><strong>Detection</strong>: the cluster detects failure via missed heartbeats or failed health checks. In Cassandra, gossip protocol propagates failure info to all nodes. In Zookeeper, ephemeral nodes disappear when the client disconnects.</li>
+<li><strong>Leader election</strong> (if the failed node was a leader/primary): Raft or Paxos consensus algorithm is triggered. Remaining nodes elect a new leader based on which has the most up-to-date log. This typically takes 1–3 seconds.</li>
+<li><strong>Data redistribution</strong>: the failed node's data partitions (in consistent hashing systems) are re-served from replicas on other nodes. Read requests are automatically routed to replicas.</li>
+<li><strong>Write handling during failure</strong>: in a quorum-based system (Cassandra), writes can still succeed if a quorum of replicas (e.g., 2 of 3) acknowledge. The failed node will receive the missed writes via hinted handoff when it rejoins.</li>
+<li><strong>Client retries</strong>: the client or service mesh retries the failed request to a healthy replica. If using exponential backoff with jitter, this avoids thundering herd on recovery.</li>
+<li><strong>Reconciliation on recovery</strong>: when the failed node comes back, it uses anti-entropy (Merkle trees) to identify and sync missed writes from replicas.</li>
+</ul>
+`},
+{q:'Why must APIs be idempotent?',a:`
+<ul>
+<li><strong>Network is unreliable</strong>: a client sends a request, the network drops the response but the server processed it. The client doesn't know — it retries. Without idempotency, the action happens twice.</li>
+<li><strong>Critical for financial systems</strong>: charging a customer twice because of a retry is a catastrophic bug. An idempotent payment API must use a unique <span class="code-tag">idempotency_key</span> — the server stores processed keys and returns the same response on duplicate requests.</li>
+<li><strong>HTTP semantics</strong>: GET, PUT, DELETE are defined as idempotent (repeating them has the same effect as once). POST is not — calling POST /orders twice creates two orders.</li>
+<li><strong>Implementation</strong>:
+  <ul class="nested">
+    <li>Client generates a unique <span class="code-tag">idempotency_key</span> (UUID) per logical operation</li>
+    <li>Server stores <span class="code-tag">(idempotency_key → response)</span> in Redis or DB with TTL</li>
+    <li>On duplicate request: return stored response without re-executing business logic</li>
+  </ul>
+</li>
+<li><strong>Idempotency at-scale</strong>: AWS SQS guarantees at-least-once delivery — your message consumer must be idempotent to handle duplicate messages gracefully</li>
+</ul>
+`},
+{q:'What causes hot partitions?',a:`
+<ul>
+<li><strong>Skewed access patterns</strong>: if you partition by <span class="code-tag">user_id</span>, a user with 100M followers generates disproportionate reads — their partition is "hot"</li>
+<li><strong>Poor partition key choice</strong>: using <span class="code-tag">timestamp</span> as partition key means all writes go to the "current" partition — a classic time-series anti-pattern</li>
+<li><strong>Small cardinality keys</strong>: partitioning by <span class="code-tag">status</span> (active/inactive) means only 2 partitions — everything is hot</li>
+<li><strong>Solutions</strong>:
+  <ul class="nested">
+    <li>Add salt/suffix to partition key: <span class="code-tag">user_id + "_" + random(0,10)</span> — spreads hot entity across 10 partitions, but requires scatter-gather for reads</li>
+    <li>Application-level caching: absorb hot reads in Redis before they hit the partition</li>
+    <li>Partition splitting: split a hot partition into smaller sub-partitions</li>
+    <li>Write-behind pattern: buffer writes locally, batch-write to the partition periodically</li>
+  </ul>
+</li>
+</ul>
+`}
+]},
+
+{id:'s10',num:'10',title:'Message Queues',short:'Message Queues',
+topics:['Producer-Consumer','Pub/Sub','Message Ordering','Backpressure','Kafka','RabbitMQ'],
+qa:[
+{q:'Why do we need message queues?',a:`
+<ul>
+<li><strong>Decoupling</strong>: producers and consumers are independent — a producer doesn't need to know which service consumes its messages, or even if one is running. Services can be deployed and scaled independently.</li>
+<li><strong>Absorb traffic spikes</strong>: if 100K orders arrive in 10 seconds but your order service can only process 10K/sec, a queue buffers the excess. Without a queue, your service crashes or drops requests.</li>
+<li><strong>Async processing</strong>: move slow, non-critical operations (sending emails, generating thumbnails, analytics) off the critical path. User gets immediate response; work happens asynchronously.</li>
+<li><strong>Durability</strong>: messages are persisted to disk (Kafka, RabbitMQ). Even if the consumer crashes, messages are not lost — processed on recovery.</li>
+<li><strong>Fan-out</strong>: one message can be consumed by multiple consumers (pub/sub) — e.g., a payment event triggers accounting, notification, and analytics consumers simultaneously</li>
+</ul>
+`},
+{q:'What problems does pub/sub solve?',a:`
+<ul>
+<li><strong>One-to-many broadcasting</strong>: instead of a producer directly calling N services (tight coupling), it publishes to a topic. Any number of subscribers consume independently — adding a new consumer requires no change to the producer.</li>
+<li><strong>Event-driven architecture</strong>: services react to events rather than polling or direct calls — more resilient, more composable</li>
+<li><strong>Topic-based filtering</strong>: consumers subscribe to only the topics they care about — not all events, just relevant ones</li>
+<li><strong>Replay capability</strong> (Kafka): consumers can replay old messages — useful for rebuilding state after a crash, onboarding new consumers to historical data, or debugging</li>
+<li><strong>Observer pattern at scale</strong>: pub/sub is the distributed systems implementation of the observer pattern. The topic is the subject; subscribers are observers.</li>
+<li><strong>Problem with pub/sub</strong>: message ordering across partitions is not guaranteed; exactly-once delivery is hard; debugging event chains across services is complex</li>
+</ul>
+`},
+{q:'What causes consumer lag?',a:`
+<ul>
+<li><strong>Definition</strong>: consumer lag = difference between the latest message offset in the queue and the offset the consumer has processed. High lag means consumers are falling behind producers.</li>
+<li><strong>Causes</strong>:
+  <ul class="nested">
+    <li>Consumer processing is slower than message production rate — not enough consumer instances</li>
+    <li>Slow external calls in consumer logic (DB writes, HTTP calls to downstream services)</li>
+    <li>Consumer group rebalancing: when a consumer joins or leaves, Kafka reassigns partitions — all consumers pause briefly, causing lag spike</li>
+    <li>Large batch sizes: if a consumer processes 1,000 messages per batch but a step fails, the whole batch is retried — appears as lag spikes</li>
+    <li>GC pauses in JVM consumers: a 500ms GC pause in a consumer means 500ms of no processing</li>
+  </ul>
+</li>
+<li><strong>Solutions</strong>:
+  <ul class="nested">
+    <li>Scale up consumers: add more consumer instances (up to the number of partitions)</li>
+    <li>Increase partitions: more partitions = higher parallelism (irreversible in Kafka — plan ahead)</li>
+    <li>Optimize consumer logic: batch DB writes, use async I/O, reduce processing time per message</li>
+    <li>Monitor lag as a metric: alert when lag exceeds a threshold — lag is a leading indicator of problems</li>
+  </ul>
+</li>
+</ul>
+`}
+]},
+
+{id:'s11',num:'11',title:'LLD Fundamentals',short:'LLD & SOLID',
+topics:['Single Responsibility','Open-Closed','Liskov Substitution','Interface Segregation','Dependency Inversion'],
+qa:[
+{q:'Why does SOLID matter in large systems?',a:`
+<ul>
+<li><strong>Single Responsibility (SRP)</strong>: each class does one thing → easier to test, change, and understand. A class that handles DB access, business logic, AND email sending is impossible to unit-test and breaks for multiple reasons.</li>
+<li><strong>Open-Closed (OCP)</strong>: classes are open for extension, closed for modification. Add new payment methods by extending an interface, not by editing existing PaymentProcessor code — reduces regression risk.</li>
+<li><strong>Liskov Substitution (LSP)</strong>: subtypes must be substitutable for base types. If Rectangle has a subclass Square that overrides setWidth/setHeight in a breaking way, polymorphism breaks — code expecting Rectangle fails silently.</li>
+<li><strong>Interface Segregation (ISP)</strong>: no class should be forced to implement interfaces it doesn't use. A thin ReadOnlyRepository interface is better than a fat Repository interface that forces read-only implementations to stub out write methods.</li>
+<li><strong>Dependency Inversion (DIP)</strong>: high-level modules depend on abstractions, not concretions. An OrderService should depend on <span class="code-tag">IPaymentGateway</span>, not <span class="code-tag">StripeGateway</span> — swap Stripe for PayPal without touching OrderService.</li>
+<li><strong>In large systems</strong>: hundreds of engineers working on a codebase simultaneously need these guardrails. SOLID makes the codebase predictable — you can read one class and understand it without knowing the whole system.</li>
+</ul>
+`},
+{q:'What happens when classes violate SRP?',a:`
+<ul>
+<li><strong>God classes emerge</strong>: a UserService that handles authentication, profile management, email verification, payment processing, and analytics becomes thousands of lines — no one person understands it fully</li>
+<li><strong>Test complexity explodes</strong>: to unit test one function, you need to mock 10 unrelated dependencies that live in the same class</li>
+<li><strong>Merge conflicts increase</strong>: multiple teams editing the same class for unrelated features causes constant merge conflicts and slows velocity</li>
+<li><strong>Cascading changes</strong>: a change to the email sending logic risks breaking authentication because they share state in the same class</li>
+<li><strong>Refactoring is risky</strong>: extracting a god class into smaller classes after the fact requires understanding all callers — a multi-week project vs. getting it right initially</li>
+</ul>
+`}
+]},
+
+{id:'s12',num:'12',title:'Design Patterns',short:'Design Patterns',
+topics:['Singleton','Factory','Strategy','Observer'],
+qa:[
+{q:'Singleton — use cases and thread-safe implementation',a:`
+<ul>
+<li><strong>Use cases</strong>: Logger (one global log writer), Configuration (load config once, read everywhere), DB connection pool (one pool shared across the app), Cache manager</li>
+<li><strong>Thread-safe singleton (double-checked locking in Java)</strong>:</li>
+</ul>
+<pre style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:12px;font-size:12px;font-family:var(--font-mono);overflow-x:auto;margin:8px 0">public class Singleton {
+    private static volatile Singleton instance;
+    private Singleton() {}
+    
+    public static Singleton getInstance() {
+        if (instance == null) {
+            synchronized (Singleton.class) {
+                if (instance == null) {  // double check
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}</pre>
+<ul>
+<li><strong>Why volatile?</strong>: without <span class="code-tag">volatile</span>, the JVM can reorder object initialization — thread B might see a non-null but partially initialized object</li>
+<li><strong>Better alternative (Bill Pugh / Initialization-on-demand)</strong>: the inner static class is not loaded until <span class="code-tag">getInstance()</span> is called — thread-safe by class loader guarantee, no synchronization overhead:</li>
+</ul>
+<pre style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:12px;font-size:12px;font-family:var(--font-mono);overflow-x:auto;margin:8px 0">public class Singleton {
+    private static class Holder {
+        static final Singleton INSTANCE = new Singleton();
+    }
+    public static Singleton getInstance() { return Holder.INSTANCE; }
+}</pre>
+`},
+{q:'When is the Factory Pattern useful?',a:`
+<ul>
+<li><strong>When object creation is complex</strong>: encapsulate multi-step construction logic in a factory rather than scattering it across callers</li>
+<li><strong>When the concrete type is determined at runtime</strong>: <span class="code-tag">NotificationFactory.create("EMAIL")</span> returns an <span class="code-tag">EmailNotification</span>; <span class="code-tag">create("SMS")</span> returns <span class="code-tag">SmsNotification</span> — caller only knows the interface</li>
+<li><strong>Decouples creation from usage</strong>: changing from MySQL to PostgreSQL means changing the factory, not every DAO class</li>
+<li><strong>Example at scale</strong>: a payment system's <span class="code-tag">PaymentProcessorFactory</span> creates Stripe, PayPal, or Braintree processors based on user country — the OrderService doesn't know which processor it gets</li>
+</ul>
+`},
+{q:'How can algorithms be swapped dynamically with Strategy Pattern?',a:`
+<ul>
+<li><strong>Define a strategy interface</strong>: <span class="code-tag">interface SortStrategy { void sort(int[] data); }</span></li>
+<li><strong>Implement concrete strategies</strong>: <span class="code-tag">QuickSort</span>, <span class="code-tag">MergeSort</span>, <span class="code-tag">RadixSort</span> each implement the interface</li>
+<li><strong>Context class holds a reference</strong>: <span class="code-tag">DataProcessor</span> has a <span class="code-tag">SortStrategy strategy</span> field — calling <span class="code-tag">process()</span> delegates to <span class="code-tag">strategy.sort()</span></li>
+<li><strong>Runtime swap</strong>: <span class="code-tag">processor.setStrategy(new QuickSort())</span> — algorithm changes without modifying DataProcessor</li>
+<li><strong>Real-world examples</strong>:
+  <ul class="nested">
+    <li>Compression: GZIP vs LZ4 vs Snappy based on data type and latency requirements</li>
+    <li>Authentication: JWT strategy vs Session strategy, swappable per environment</li>
+    <li>Routing: different load balancing strategies (round-robin, least-conn, weighted) injected at startup</li>
+  </ul>
+</li>
+</ul>
+`},
+{q:'How do pub/sub systems relate to the Observer Pattern?',a:`
+<ul>
+<li><strong>Observer pattern</strong>: Subject maintains a list of Observers. When subject state changes, it calls <span class="code-tag">notify()</span> on all observers. Direct in-process communication.</li>
+<li><strong>Pub/sub is the distributed version</strong>: the "topic" is the subject; "subscribers" are observers; the message broker (Kafka, RabbitMQ) decouples them so they don't need direct references</li>
+<li><strong>Key differences</strong>:
+  <ul class="nested">
+    <li>Observer: subject knows its observers directly (tight coupling)</li>
+    <li>Pub/sub: publisher doesn't know subscribers (loose coupling via broker)</li>
+    <li>Observer: synchronous (notify() blocks until all observers return)</li>
+    <li>Pub/sub: asynchronous (publisher returns immediately after publishing)</li>
+    <li>Observer: in-process, no durability</li>
+    <li>Pub/sub: cross-process, durable (Kafka persists messages to disk)</li>
+  </ul>
+</li>
+</ul>
+`}
+]},
+
+{id:'s14',num:'14',title:'Practice Problems',short:'Practice Problems',
+topics:['URL Shortener','Rate Limiter','LRU Cache','Google Drive','Autocomplete','Snowflake ID'],
+qa:[
+{q:'URL Shortener (TinyURL) — full design walkthrough',a:`
+<ul>
+<li><strong>Short URL generation</strong>: hash the long URL using MD5 or SHA-256 → take first 6–8 characters. Alternatively, generate a random base62 string (a-z, A-Z, 0-9) of length 7 → 62^7 = ~3.5 trillion combinations</li>
+<li><strong>Collision prevention</strong>:
+  <ul class="nested">
+    <li>Check if short code exists in DB before returning it</li>
+    <li>If collision, append a counter suffix or regenerate</li>
+    <li>Better: use a distributed ID generator (like Snowflake) and base62-encode the ID — guaranteed unique by construction</li>
+  </ul>
+</li>
+<li><strong>Storage</strong>: simple key-value: <span class="code-tag">short_code → long_url</span>. DynamoDB or Redis are ideal — O(1) lookup, no complex queries needed</li>
+<li><strong>Scaling reads</strong>:
+  <ul class="nested">
+    <li>Cache hot short codes in Redis — a viral link might be accessed millions of times/day</li>
+    <li>Read replicas in the database for high read traffic</li>
+    <li>CDN at the redirect endpoint — edge servers handle the 301 redirect for cached URLs</li>
+  </ul>
+</li>
+<li><strong>Redirect type</strong>: 301 (permanent, browser caches → reduces server load) vs 302 (temporary, server handles every request → better for analytics). Use 302 if you need click tracking.</li>
+<li><strong>Scale estimate</strong>: 100M new URLs/day = ~1200 writes/sec. 10B redirects/day = ~115K reads/sec. 1,000:1 read:write ratio → optimize heavily for reads.</li>
+</ul>
+`},
+{q:'Rate Limiter — gateway vs service, and distributed implementation',a:`
+<ul>
+<li><strong>Where should it live?</strong>:
+  <ul class="nested">
+    <li><strong>API Gateway</strong> (recommended): rate limiting happens before requests reach any service — protects the entire backend. Centralized, easy to manage, applies to all endpoints uniformly.</li>
+    <li><strong>Individual service</strong>: for business-logic rate limits (e.g., "max 5 failed login attempts per user per hour") — the service has the context to enforce this rule</li>
+    <li>Use both: gateway for infrastructure protection (DDoS), service-level for business rules</li>
+  </ul>
+</li>
+<li><strong>Distributed rate limiting with Redis</strong>:
+  <ul class="nested">
+    <li>Each API instance shares a Redis counter. Atomic INCR + TTL ensures correctness across instances.</li>
+    <li>Lua script for atomicity: <span class="code-tag">INCR key → if count == 1, EXPIRE key 60 → return count</span></li>
+    <li>Sliding window: use Redis sorted set with timestamps as scores — count elements in last 60 seconds. More accurate than fixed window.</li>
+  </ul>
+</li>
+<li><strong>Token bucket in Redis</strong>: store <span class="code-tag">(tokens, last_refill_timestamp)</span> per key. On each request, compute tokens earned since last request, add to bucket (cap at max), deduct 1 token if available.</li>
+<li><strong>Response headers</strong>: always return <span class="code-tag">X-RateLimit-Limit</span>, <span class="code-tag">X-RateLimit-Remaining</span>, <span class="code-tag">Retry-After</span> — clients can back off intelligently</li>
+</ul>
+`},
+{q:'LRU Cache — why HashMap + doubly linked list?',a:`
+<ul>
+<li><strong>Requirements</strong>: O(1) get, O(1) put, evict least-recently-used item when capacity is reached</li>
+<li><strong>HashMap alone</strong>: O(1) get/put but no ordering — can't find the LRU item without O(n) scan</li>
+<li><strong>Linked list alone</strong>: O(1) insertion/deletion at head/tail but O(n) lookup by key</li>
+<li><strong>Combined</strong>:
+  <ul class="nested">
+    <li>HashMap: <span class="code-tag">key → node pointer</span> — O(1) access to any node</li>
+    <li>Doubly linked list: nodes ordered by recency (most recent at head, LRU at tail) — O(1) move-to-head and O(1) remove-from-tail</li>
+    <li>On get: find node in O(1) via HashMap, move it to head of list in O(1)</li>
+    <li>On put (cache full): evict tail node in O(1), remove from HashMap in O(1), insert new node at head</li>
+  </ul>
+</li>
+<li><strong>Why doubly linked?</strong>: to remove a node from the middle of the list in O(1), you need access to both prev and next pointers. Singly linked would require O(n) traversal to find the predecessor.</li>
+<li><strong>Java built-in</strong>: <span class="code-tag">LinkedHashMap</span> with <span class="code-tag">accessOrder=true</span> and overridden <span class="code-tag">removeEldestEntry()</span> is a ready-made LRU cache</li>
+</ul>
+`},
+{q:'Google Drive — uploads, metadata, sync',a:`
+<ul>
+<li><strong>File upload</strong>:
+  <ul class="nested">
+    <li>Client chunks file into 5–10MB blocks and uploads each chunk separately (resumable uploads)</li>
+    <li>Each chunk has a content hash — server deduplicates identical chunks across users (block-level dedup)</li>
+    <li>Chunks go directly to object storage (S3/GCS) via a pre-signed URL — bypasses app servers for large files</li>
+    <li>Metadata DB records: <span class="code-tag">file_id, owner_id, name, size, chunk_ids[], version, updated_at</span></li>
+  </ul>
+</li>
+<li><strong>Metadata storage</strong>: relational DB (PostgreSQL) for file hierarchy, permissions, sharing — needs ACID and complex queries. Object storage (S3) for actual file bytes.</li>
+<li><strong>File synchronization</strong>:
+  <ul class="nested">
+    <li>Client maintains a local index of file checksums</li>
+    <li>On file change: compute diff at block level → upload only changed blocks (delta sync)</li>
+    <li>Server sends sync events via WebSocket or long-polling → client downloads changed blocks</li>
+    <li>Conflict resolution: last-write-wins by timestamp, or create a "conflicted copy" for simultaneous edits</li>
+  </ul>
+</li>
+<li><strong>Scale</strong>: Google Drive serves billions of files. Metadata DB is sharded by <span class="code-tag">user_id</span>; object storage is distributed across multiple regions for durability (typically 3+ AZ replication).</li>
+</ul>
+`},
+{q:'Autocomplete — Trie and scale',a:`
+<ul>
+<li><strong>How Trie works</strong>: tree where each node is a character. Path from root to a node spells a prefix. Each node stores: character, children map, isEndOfWord, and top-N most popular completions.</li>
+<li><strong>Query</strong>: traverse the trie following the typed prefix (O(L) where L = prefix length) → return the pre-computed list of top suggestions at that node. O(1) after traversal because suggestions are cached at nodes.</li>
+<li><strong>Ranking</strong>: each suggestion has a frequency score (based on historical search frequency). Stored as a max-heap or sorted list at each node. Updated periodically via offline batch jobs (daily/hourly aggregation of search logs).</li>
+<li><strong>Scaling autocomplete</strong>:
+  <ul class="nested">
+    <li>Trie is read-heavy — load it entirely into memory. A compact trie for 1M common queries fits in ~1-2GB RAM.</li>
+    <li>Shard by first character: 'a*' goes to one server, 'b*' to another — simple and effective</li>
+    <li>Cache top queries in Redis: the top 1% of prefixes account for 90% of traffic — cache their responses</li>
+    <li>Update frequency: don't rebuild trie on every search. Batch-update every hour using MapReduce over search logs.</li>
+  </ul>
+</li>
+</ul>
+`},
+{q:'Unique ID Generator (Snowflake) — why auto-increment fails and how distributed IDs work',a:`
+<ul>
+<li><strong>Why auto-increment fails at scale</strong>:
+  <ul class="nested">
+    <li>Single point of failure: one DB generates all IDs — it becomes a bottleneck and SPOF</li>
+    <li>Sharding conflict: if you shard data across DBs, each shard's auto-increment overlaps (both generate ID=1, ID=2...)</li>
+    <li>Predictable IDs: sequential IDs expose business metrics (competitors can estimate your order volume by comparing consecutive order IDs) and enable enumeration attacks</li>
+  </ul>
+</li>
+<li><strong>Snowflake ID structure (64-bit integer)</strong>:
+  <ul class="nested">
+    <li>Bit 0: sign bit (always 0 → positive number)</li>
+    <li>Bits 1–41: timestamp in milliseconds since epoch (~69 year range)</li>
+    <li>Bits 42–51: machine/datacenter ID (10 bits → 1024 machines)</li>
+    <li>Bits 52–63: sequence number (12 bits → 4096 IDs per machine per millisecond)</li>
+  </ul>
+</li>
+<li><strong>Properties</strong>: globally unique (machine ID differentiates), time-sortable (higher ID = later timestamp), generated locally (no central coordination needed → no SPOF), high throughput (4M IDs/sec per machine)</li>
+<li><strong>Clock skew problem</strong>: if a machine's clock goes backward (NTP adjustment), the same timestamp+sequence could repeat → ID collision. Solution: refuse to generate IDs until the clock catches up (wait or raise an alert).</li>
+<li><strong>Alternatives</strong>: UUID v4 (128-bit random, not sortable, larger storage), ULID (sortable UUID alternative), MongoDB ObjectID (similar to Snowflake)</li>
+</ul>
+`}
+]},
+
+{id:'s15',num:'15',title:'Interview Strategy',short:'Interview Strategy',
+topics:['Structure','Traffic Estimation','Bottleneck ID','Trade-offs','What Interviewers Expect'],
+qa:[
+{q:'How to structure system design answers',a:`
+<ul>
+<li><strong>Step 1 — Requirements (3–5 min)</strong>: ask clarifying questions first. Functional requirements (what does the system do?), non-functional requirements (scale, latency, availability, consistency). Don't start designing until you know what you're building.</li>
+<li><strong>Step 2 — Capacity estimation (2–3 min)</strong>: QPS, storage, bandwidth. Round aggressively. State your assumptions clearly. This guides design decisions.</li>
+<li><strong>Step 3 — High-level design (5–10 min)</strong>: draw the main components — client, LB, app servers, cache, database, CDN. Show the happy path request flow. Get the interviewer to agree before diving deeper.</li>
+<li><strong>Step 4 — Deep dive (10–15 min)</strong>: pick the most interesting/critical components and go deep. Don't try to cover everything — go deep on 2–3 areas. Interviewers want to see depth, not breadth.</li>
+<li><strong>Step 5 — Trade-offs and bottlenecks (5 min)</strong>: explicitly discuss what your design trades off. Acknowledge what you'd do differently with more time. Show you can think critically about your own design.</li>
+<li><strong>Common mistake</strong>: jumping straight into drawing without clarifying requirements. The interviewer may redirect you — starting with requirements shows maturity.</li>
+</ul>
+`},
+{q:'How to estimate traffic quickly in an interview',a:`
+<ul>
+<li><strong>The formula</strong>: DAU × requests/user/day / 86,400 = average QPS. Multiply by 2-3x for peak.</li>
+<li><strong>Useful numbers to memorize</strong>:
+  <ul class="nested">
+    <li>1 day = 86,400 seconds ≈ 100K seconds (easy rounding)</li>
+    <li>1 month = ~2.5M seconds</li>
+    <li>1 year = ~30M seconds</li>
+    <li>Twitter-scale: ~300M DAU, ~500M tweets/day</li>
+    <li>YouTube-scale: ~2B users, 500 hours of video uploaded/minute</li>
+  </ul>
+</li>
+<li><strong>Storage estimates</strong>: know common data sizes: char = 1B, integer = 4B, UUID = 16B, small image = 100KB, HD image = 1MB, 1-min video = 50MB</li>
+<li><strong>Bandwidth</strong>: if 1M QPS each returning 10KB → 10 GB/sec → 10 Tbps. Most CDN providers handle ~100 Tbps total. Sanity-check your numbers.</li>
+<li><strong>State your assumptions</strong>: "I'll assume 100M DAU, 10 requests per user per day, 10:1 read-write ratio. Does that seem reasonable?" — shows collaborative thinking</li>
+</ul>
+`},
+{q:'How to identify bottlenecks during an interview',a:`
+<ul>
+<li><strong>Always ask: where is state?</strong> Stateful components (databases, caches) are almost always the bottleneck. Stateless app servers scale trivially.</li>
+<li><strong>Calculate throughput at each layer</strong>: given your QPS estimate, can each component handle it? "We have 10K QPS writes — a single PostgreSQL handles ~2K writes/sec — we need to shard."</li>
+<li><strong>Watch for synchronous blocking</strong>: any synchronous call that can be slow (DB query, external API) is a potential bottleneck under load</li>
+<li><strong>Check for SPOFs</strong>: anything with no replica or failover is a bottleneck in the availability sense</li>
+<li><strong>Common bottlenecks by component</strong>:
+  <ul class="nested">
+    <li>Database: shard, add replicas, add caching layer</li>
+    <li>Cache: increase memory, consistent hashing for distribution</li>
+    <li>App servers: stateless + horizontal scale (trivial)</li>
+    <li>Message queue: increase partitions, add consumers</li>
+    <li>Network: CDN, compression, binary protocols (gRPC)</li>
+  </ul>
+</li>
+</ul>
+`},
+{q:'How to explain trade-offs clearly',a:`
+<ul>
+<li><strong>Always frame as a spectrum</strong>: "We can have stronger consistency but higher latency, OR eventual consistency with lower latency — for this use case I'd choose [X] because [Y]"</li>
+<li><strong>Name the trade-off explicitly</strong>: CAP theorem forces CP vs AP, not "better" vs "worse". Interviewers want to hear you name the trade-off.</li>
+<li><strong>Anchor to requirements</strong>: "Given our consistency requirement is strong (banking), I'd choose CP even though it means some requests fail during partition — that's acceptable because returning wrong balance is worse."</li>
+<li><strong>Common trade-offs to discuss</strong>:
+  <ul class="nested">
+    <li>Consistency vs availability (CAP)</li>
+    <li>Latency vs consistency (synchronous vs async replication)</li>
+    <li>Cost vs redundancy (3x replication = 3x storage cost)</li>
+    <li>Complexity vs performance (caching adds complexity but improves performance)</li>
+    <li>Throughput vs latency (batching increases throughput, increases individual latency)</li>
+  </ul>
+</li>
+<li><strong>End with humility</strong>: "This design has X trade-off which I'm not fully happy with — in a real system I'd explore Y alternative but it adds complexity..."</li>
+</ul>
+`},
+{q:'What do interviewers expect from SWE interns?',a:`
+<ul>
+<li><strong>Not perfection — process</strong>: interviewers don't expect you to design Bigtable from scratch. They want to see how you think, structure problems, and handle feedback.</li>
+<li><strong>Requirements first</strong>: showing you ask clarifying questions before jumping to solutions is a strong positive signal — it's what senior engineers do</li>
+<li><strong>Rough capacity math</strong>: you don't need exact numbers. Showing you can estimate order of magnitude (10K QPS vs 10M QPS) and that scale drives design decisions is impressive for an intern</li>
+<li><strong>Identify the core hard problem</strong>: every system design has 1–2 genuinely hard problems. For URL shortener it's collision-free ID generation and scaling reads. For chat, it's real-time delivery and message ordering. Identifying the hard part shows depth.</li>
+<li><strong>Collaborative, not defensive</strong>: when the interviewer suggests an alternative, engage thoughtfully — "That's interesting, the advantage of your approach is X, the trade-off would be Y." Don't defend your design dogmatically.</li>
+<li><strong>Knowledge anchors</strong>: knowing concrete numbers (Redis = 100K ops/sec, PostgreSQL = 5K reads/sec, base64 7 chars = 62^7 IDs) makes your design feel grounded rather than theoretical</li>
+<li><strong>Draw as you talk</strong>: a whiteboard diagram with boxes and arrows helps the interviewer follow your reasoning and reference components by name during discussion</li>
+</ul>
+`}
+]}
+];
+
+function buildSidebar() {
+  const container = document.querySelector('.sidebar-sections');
+  container.innerHTML = '';
+  sections.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'nav-item' + (i === 0 ? ' active' : '');
+    item.dataset.id = s.id;
+    item.innerHTML = `<span class="nav-num">${s.num}</span> ${s.short}`;
+    item.onclick = () => showSection(s.id);
+    container.appendChild(item);
+  });
+}
+
+function showSection(id) {
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id);
+  });
+  document.querySelectorAll('.section').forEach(el => {
+    el.classList.toggle('active', el.id === id);
+  });
+}
+
+function buildContent() {
+  const main = document.getElementById('main-content');
+  sections.forEach((s, si) => {
+    const div = document.createElement('div');
+    div.id = s.id;
+    div.className = 'section' + (si === 0 ? ' active' : '');
+    
+    let topicsHtml = s.topics.map(t => `<span class="topic-tag">${t}</span>`).join('');
+    
+    let qaHtml = s.qa.map((item, qi) => `
+      <div class="qa-block">
+        <div class="q-label">Question ${qi + 1}</div>
+        <div class="question">${item.q}</div>
+        <div class="answer">
+          <button class="answer-toggle" onclick="toggleAnswer(this)">
+            <span>Show answer — Principal Engineer level</span>
+            <span class="toggle-icon">+</span>
+          </button>
+          <div class="answer-body">${item.a}</div>
+        </div>
+      </div>
+    `).join('<div class="divider"></div>');
+    
+    div.innerHTML = `
+      <div class="section-title">${s.num}. ${s.title}</div>
+      <div class="section-sub">Concepts to know well</div>
+      <div class="topics-bar">${topicsHtml}</div>
+      <div class="divider"></div>
+      ${qaHtml}
+    `;
+    main.appendChild(div);
+  });
+}
+
+function toggleAnswer(btn) {
+  const body = btn.nextElementSibling;
+  const icon = btn.querySelector('.toggle-icon');
+  const isOpen = body.classList.toggle('open');
+  icon.textContent = isOpen ? '−' : '+';
+}
+
+buildSidebar();
+buildContent();
+</script>
+</body>
+</html>
